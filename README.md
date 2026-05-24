@@ -2,6 +2,8 @@
 
 Multi-stage stock anomaly discovery bot based on `codex.md`.
 
+For a higher-level explanation of the bot architecture and workflow, see [docs/design.md](docs/design.md).
+
 The first implementation slice covers:
 
 - Stage 1: liquid US common-stock universe filtering.
