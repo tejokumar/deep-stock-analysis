@@ -256,16 +256,18 @@ This job:
 - Runs tests.
 - Downloads the latest successful Stage 1 artifact.
 - Runs Stage 2, Stage 3, and Stage 4.
-- Uploads generated reports as an artifact named `scheduled-reports`.
-- Commits generated markdown reports to `reports/scheduled/` in this repository.
+- Uploads generated reports as a timestamped artifact named `scheduled-reports-*`.
+- Commits generated markdown reports to a unique timestamped folder directly under `reports/`.
+- Updates `reports/README.md` with newest runs first.
 - Uploads the updated pipeline database.
 
 ## Where Reports Are Found
 
 Reports generated in GitHub Actions are stored in two places:
 
-- As workflow artifacts named `scheduled-reports`.
-- In the repository under `reports/scheduled/` after the Stage 2-4 workflow commits them.
+- As workflow artifacts named `scheduled-reports-*`.
+- In the repository under `reports/<reverse-time>_<UTC timestamp>/` after the Stage 2-4 workflow commits them. The reverse-time prefix makes newer folders sort first in GitHub.
+- In `reports/README.md`, which links the newest runs first.
 
 To view artifact reports:
 
@@ -273,14 +275,15 @@ To view artifact reports:
 2. Open the Actions tab.
 3. Click a completed `Weekly Stage 2-4 Analysis` run.
 4. Scroll to Artifacts.
-5. Download `scheduled-reports`.
-6. Open `reports/scheduled/index.md`.
+5. Download the latest `scheduled-reports-*` artifact.
+6. Open that artifact's `index.md`.
 
 To view repository reports:
 
 1. Go to the repository.
-2. Open the `reports/scheduled/` folder.
-3. Start with `index.md`.
+2. Open `reports/README.md` to see the newest run first.
+3. Open a run link.
+4. Start with that run's `index.md`.
 
 Stage 1 alone does not generate reports. It only prepares the cached stock universe.
 

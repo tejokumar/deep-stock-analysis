@@ -52,35 +52,59 @@ jobs:
           fi
           gh run download "$run_id" --name stage1-state --dir .
 
+      - name: Prepare report run directory
+        run: |
+          timestamp="$(date -u +'%Y-%m-%dT%H-%M-%SZ')"
+          epoch="$(date -u +%s)"
+          reverse_epoch="$(printf '%010d' "$((9999999999 - epoch))")"
+          report_dir="reports/${reverse_epoch}_${timestamp}"
+          echo "REPORT_RUN_DIR=${report_dir}" >> "$GITHUB_ENV"
+          echo "REPORT_RUN_NAME=${timestamp}" >> "$GITHUB_ENV"
+          mkdir -p "${report_dir}"
+
       - name: Run Stage 2-4 from cached Stage 1
         run: |
           python -m deep_stock_analysis.cli \
             --stage stage1-stage4 \
             --use-cached-stage1 \
             --state-path pipeline_state.db \
-            --reports-dir reports/scheduled \
+            --reports-dir "${REPORT_RUN_DIR}" \
             --shortlist-min-score 30 \
             --max-sentiment-candidates 50 \
             --max-index 20 \
             --progress-every 250
 
+      - name: Update reports index
+        run: |
+          {
+            echo "# Scheduled Report Runs"
+            echo
+            echo "Newest runs are listed first. Open a run folder and start with \`index.md\`."
+            echo
+            find reports -mindepth 1 -maxdepth 1 -type d -name '[0-9]*' | sort | while read -r dir; do
+              name="$(basename "${dir}")"
+              timestamp="${name#*_}"
+              echo "- [${timestamp}](${dir}/index.md)"
+            done
+          } > reports/README.md
+
       - name: Upload reports
         uses: actions/upload-artifact@v4
         with:
-          name: scheduled-reports
-          path: reports/scheduled
+          name: scheduled-reports-${{ env.REPORT_RUN_NAME }}
+          path: ${{ env.REPORT_RUN_DIR }}
           retention-days: 30
 
       - name: Commit scheduled reports
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add reports/scheduled/*.md
+          git add reports/README.md "${REPORT_RUN_DIR}"
           if git diff --cached --quiet; then
             echo "No scheduled report changes to commit."
             exit 0
           fi
-          git commit -m "Update scheduled stock reports"
+          git commit -m "Add scheduled stock reports ${REPORT_RUN_NAME}"
           git push
 
       - name: Upload updated pipeline state
