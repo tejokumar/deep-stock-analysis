@@ -1,0 +1,78 @@
+name: Weekly Stage 2-4 Analysis
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Saturday 8:00 PM PST = Sunday 04:00 UTC.
+    - cron: "0 4 * * 0"
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  stage2_stage4:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    env:
+      GH_TOKEN: ${{ github.token }}
+      POLYGON_API_KEY: ${{ secrets.POLYGON_API_KEY }}
+      ROIC_API_KEY: ${{ secrets.ROIC_API_KEY }}
+      FMP_API_KEY: ${{ secrets.FMP_API_KEY }}
+      XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
+      XAI_SENTIMENT_MODEL: ${{ vars.XAI_SENTIMENT_MODEL || 'grok-4.3' }}
+      MAX_WORKERS: "5"
+      SHORTLIST_MIN_SCORE: "30"
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Run tests
+        run: python -m unittest discover -s tests
+
+      - name: Download latest Stage 1 state
+        run: |
+          run_id="$(gh run list \
+            --workflow weekly-stage1.yml \
+            --branch "${GITHUB_REF_NAME}" \
+            --status success \
+            --limit 1 \
+            --json databaseId \
+            --jq '.[0].databaseId')"
+          if [ -z "$run_id" ] || [ "$run_id" = "null" ]; then
+            echo "No successful Stage 1 workflow run found. Run Weekly Stage 1 Universe first."
+            exit 1
+          fi
+          gh run download "$run_id" --name stage1-state --dir .
+
+      - name: Run Stage 2-4 from cached Stage 1
+        run: |
+          python -m deep_stock_analysis.cli \
+            --stage stage1-stage4 \
+            --use-cached-stage1 \
+            --state-path pipeline_state.db \
+            --reports-dir reports/scheduled \
+            --shortlist-min-score 30 \
+            --max-sentiment-candidates 50 \
+            --max-index 20 \
+            --progress-every 250
+
+      - name: Upload reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: scheduled-reports
+          path: reports/scheduled
+          retention-days: 30
+
+      - name: Upload updated pipeline state
+        uses: actions/upload-artifact@v4
+        with:
+          name: stage2-stage4-state
+          path: pipeline_state.db
+          retention-days: 30

@@ -95,4 +95,22 @@ python3 -m unittest discover -s tests
 - Stage 3: on-demand after Stage 2 candidates pass.
 - Stage 4: on-demand for the highest-conviction candidates.
 
-No recurring automation has been created yet.
+## GitHub Actions Schedule
+
+The repository includes scheduled GitHub Actions workflows matching `codex.md`:
+
+- `Weekly Stage 1 Universe`: Saturday 4:00 PM PST, stored as Sunday 00:00 UTC in GitHub cron.
+- `Weekly Stage 2-4 Analysis`: Saturday 8:00 PM PST, stored as Sunday 04:00 UTC in GitHub cron.
+
+Add these repository secrets before enabling live runs:
+
+- `POLYGON_API_KEY`
+- `ROIC_API_KEY`
+- `FMP_API_KEY`
+- `XAI_API_KEY`
+
+Optional repository variable:
+
+- `XAI_SENTIMENT_MODEL`, defaults to `grok-4.3`.
+
+Stage 1 uploads `pipeline_state.db` as a `stage1-state` artifact. Stage 2 downloads the latest successful Stage 1 artifact, runs the cached Stage 1 universe through Stage 2-4, and uploads `scheduled-reports` plus the updated pipeline state.

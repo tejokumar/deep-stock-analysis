@@ -1,0 +1,47 @@
+name: Weekly Stage 1 Universe
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Saturday 4:00 PM PST = Sunday 00:00 UTC.
+    - cron: "0 0 * * 0"
+
+jobs:
+  stage1:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    env:
+      POLYGON_API_KEY: ${{ secrets.POLYGON_API_KEY }}
+      ROIC_API_KEY: ${{ secrets.ROIC_API_KEY }}
+      FMP_API_KEY: ${{ secrets.FMP_API_KEY }}
+      XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
+      XAI_SENTIMENT_MODEL: ${{ vars.XAI_SENTIMENT_MODEL || 'grok-4.3' }}
+      MAX_WORKERS: "5"
+      SHORTLIST_MIN_SCORE: "30"
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Run tests
+        run: python -m unittest discover -s tests
+
+      - name: Run Stage 1 liquid universe scan
+        run: |
+          python -m deep_stock_analysis.cli \
+            --stage stage1 \
+            --all-tickers \
+            --state-path pipeline_state.db \
+            --progress-every 250
+
+      - name: Upload Stage 1 state
+        uses: actions/upload-artifact@v4
+        with:
+          name: stage1-state
+          path: pipeline_state.db
+          retention-days: 14
