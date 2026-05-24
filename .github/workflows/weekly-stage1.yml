@@ -18,6 +18,7 @@ jobs:
       XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
       XAI_SENTIMENT_MODEL: ${{ vars.XAI_SENTIMENT_MODEL || 'grok-4.3' }}
       MAX_WORKERS: "5"
+      STAGE1_WORKERS: "12"
       SHORTLIST_MIN_SCORE: "30"
 
     steps:
@@ -32,13 +33,14 @@ jobs:
       - name: Run tests
         run: python -m unittest discover -s tests
 
-      - name: Run Stage 1 liquid universe scan
+      - name: Run Stage 1 curated watchlist scan
         run: |
           python -m deep_stock_analysis.cli \
             --stage stage1 \
-            --all-tickers \
+            --watchlist curated \
             --state-path pipeline_state.db \
-            --progress-every 250
+            --stage1-workers 12 \
+            --progress-every 50
 
       - name: Upload Stage 1 state
         uses: actions/upload-artifact@v4

@@ -115,4 +115,4 @@ Optional repository variable:
 
 - `XAI_SENTIMENT_MODEL`, defaults to `grok-4.3`.
 
-Stage 1 uploads `pipeline_state.db` as a `stage1-state` artifact. Stage 2 downloads the latest successful Stage 1 artifact, runs the cached Stage 1 universe through Stage 2-4, uploads a timestamped `scheduled-reports-*` artifact plus the updated pipeline state, and commits the generated markdown reports under `reports/<reverse-time>_<UTC timestamp>/`. The reverse-time prefix makes newer report folders sort first in GitHub, and `reports/README.md` links runs newest-first.
+Stage 1 scans the curated watchlist, uploads `pipeline_state.db` as a `stage1-state` artifact, and uses `STAGE1_WORKERS=12`. Stage 2 downloads the latest successful Stage 1 artifact, runs the cached watchlist universe through Stage 2-4 with high-conviction filters, uploads a timestamped `scheduled-reports-*` artifact plus the updated pipeline state, and commits generated markdown reports under `reports/<reverse-time>_<UTC timestamp>/`. The reverse-time prefix makes newer report folders sort first in GitHub, and `reports/README.md` links runs newest-first.

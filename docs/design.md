@@ -237,7 +237,7 @@ Sunday 00:00 UTC
 This job:
 
 - Runs tests.
-- Scans the full Polygon universe.
+- Scans the curated watchlist.
 - Saves `pipeline_state.db`.
 - Uploads the database as a GitHub Actions artifact named `stage1-state`.
 
@@ -255,7 +255,7 @@ This job:
 
 - Runs tests.
 - Downloads the latest successful Stage 1 artifact.
-- Runs Stage 2, Stage 3, and Stage 4.
+- Runs Stage 2, Stage 3, and Stage 4 with high-conviction filters.
 - Uploads generated reports as a timestamped artifact named `scheduled-reports-*`.
 - Commits generated markdown reports to a unique timestamped folder directly under `reports/`.
 - Updates `reports/README.md` with newest runs first.

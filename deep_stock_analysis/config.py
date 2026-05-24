@@ -17,6 +17,12 @@ class PipelineConfig:
     xai_sentiment_model: str = "grok-4.3"
     fmp_fundamental_period: str = "annual"
     max_workers: int = 5
+    stage1_workers: int | None = None
+    stage2_workers: int | None = None
+    stage3_workers: int | None = None
+    news_workers: int | None = None
+    sentiment_workers: int | None = None
+    stage4_workers: int | None = None
     min_close_price: float = 2.0
     min_avg_volume: int = 250_000
     shortlist_min_score: float = 55.0
@@ -33,6 +39,12 @@ class PipelineConfig:
             fmp_fundamental_period=os.getenv("FMP_FUNDAMENTAL_PERIOD", "annual"),
             state_path=Path(state_path or os.getenv("PIPELINE_STATE_PATH", "pipeline_state.db")),
             max_workers=int(os.getenv("MAX_WORKERS", "5")),
+            stage1_workers=_optional_int("STAGE1_WORKERS"),
+            stage2_workers=_optional_int("STAGE2_WORKERS"),
+            stage3_workers=_optional_int("STAGE3_WORKERS"),
+            news_workers=_optional_int("NEWS_WORKERS"),
+            sentiment_workers=_optional_int("SENTIMENT_WORKERS"),
+            stage4_workers=_optional_int("STAGE4_WORKERS"),
             shortlist_min_score=float(os.getenv("SHORTLIST_MIN_SCORE", "55")),
         )
 
@@ -60,3 +72,8 @@ def _clean_env_value(value: str) -> str:
     if len(value) >= 2 and value[0] == value[-1] and value[0] in {"'", '"'}:
         return value[1:-1]
     return value
+
+
+def _optional_int(name: str) -> int | None:
+    value = os.getenv(name)
+    return int(value) if value else None

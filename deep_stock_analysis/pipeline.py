@@ -90,7 +90,7 @@ class DiscoveryPipeline:
         candidates: list[Stage1Candidate] = []
         processed = 0
 
-        with ThreadPoolExecutor(max_workers=self.config.max_workers) as executor:
+        with ThreadPoolExecutor(max_workers=self._workers("stage1")) as executor:
             future_to_ticker = {executor.submit(self.universe_provider.price_stats, ticker.symbol): ticker for ticker in tickers}
             for future in as_completed(future_to_ticker):
                 processed += 1
@@ -112,6 +112,59 @@ class DiscoveryPipeline:
         self.state.save_stage1(candidates)
         return candidates
 
+    def run_stage1_symbols(self, symbols: list[str], progress_every: int = 100) -> list[Stage1Candidate]:
+        started = time.monotonic()
+        candidates: list[Stage1Candidate] = []
+        processed = 0
+
+        if progress_every:
+            print(f"Stage 1 scanning {len(symbols)} requested symbols.", flush=True)
+
+        with ThreadPoolExecutor(max_workers=self._workers("stage1")) as executor:
+            future_to_symbol = {executor.submit(self._stage1_candidate_for_symbol, symbol): symbol for symbol in symbols}
+            for future in as_completed(future_to_symbol):
+                processed += 1
+                symbol = future_to_symbol[future]
+                try:
+                    candidate = future.result()
+                except ProviderError as exc:
+                    self.stage1_errors[symbol] = str(exc)
+                    continue
+                if not candidate:
+                    continue
+                candidates.append(candidate)
+                if progress_every and processed % progress_every == 0:
+                    elapsed = time.monotonic() - started
+                    print(
+                        f"Stage 1 watchlist progress: {processed}/{len(symbols)} scanned, "
+                        f"{len(candidates)} retained, {elapsed:.1f}s elapsed.",
+                        flush=True,
+                    )
+
+        candidates.sort(key=lambda item: item.ticker.symbol)
+        self.state.save_stage1(candidates)
+        return candidates
+
+    def _stage1_candidate_for_symbol(self, symbol: str) -> Stage1Candidate | None:
+        ticker = self._ticker_for_symbol(symbol)
+        stats = self.universe_provider.price_stats(ticker.symbol)
+        if not stats:
+            return None
+        if stats.close_price < self.config.min_close_price or stats.avg_volume_20d < self.config.min_avg_volume:
+            return None
+        return Stage1Candidate(ticker=ticker, price_stats=stats)
+
+    def _ticker_for_symbol(self, symbol: str) -> Ticker:
+        details = getattr(self.universe_provider, "ticker_details", None)
+        if callable(details):
+            try:
+                ticker = details(symbol)
+                if ticker:
+                    return ticker
+            except ProviderError:
+                pass
+        return Ticker(symbol=symbol)
+
     def run_stage2(self, stage1_candidates: list[Stage1Candidate], progress_every: int = 50) -> list[Stage2Candidate]:
         started = time.monotonic()
         price_by_symbol = {candidate.ticker.symbol: candidate.price_stats for candidate in stage1_candidates}
@@ -119,7 +172,7 @@ class DiscoveryPipeline:
         scored: list[Stage2Candidate] = []
         processed = 0
 
-        with ThreadPoolExecutor(max_workers=self.config.max_workers) as executor:
+        with ThreadPoolExecutor(max_workers=self._workers("stage2")) as executor:
             future_to_symbol = {
                 executor.submit(self.fundamental_provider.fundamentals, candidate.ticker.symbol): candidate.ticker.symbol
                 for candidate in stage1_candidates
@@ -166,7 +219,7 @@ class DiscoveryPipeline:
 
         signals: list[Stage3Signal] = []
         processed = 0
-        with ThreadPoolExecutor(max_workers=self.config.max_workers) as executor:
+        with ThreadPoolExecutor(max_workers=self._workers("stage3")) as executor:
             future_to_symbol = {
                 executor.submit(self.transcript_provider.latest_transcript, candidate.symbol): candidate.symbol
                 for candidate in stage2_candidates
@@ -198,7 +251,7 @@ class DiscoveryPipeline:
 
         signals: list[NewsSignal] = []
         processed = 0
-        with ThreadPoolExecutor(max_workers=self.config.max_workers) as executor:
+        with ThreadPoolExecutor(max_workers=self._workers("news")) as executor:
             future_to_symbol = {
                 executor.submit(self.news_provider.latest_news, candidate.symbol): candidate.symbol
                 for candidate in stage2_candidates
@@ -234,7 +287,7 @@ class DiscoveryPipeline:
         candidate_signals = stage3_signals[:max_candidates] if max_candidates is not None else stage3_signals
         news_by_symbol = {signal.ticker: signal for signal in news_signals or []}
         sentiment_signals: list[SentimentSignal] = []
-        with ThreadPoolExecutor(max_workers=min(self.config.max_workers, 3)) as executor:
+        with ThreadPoolExecutor(max_workers=self._workers("sentiment")) as executor:
             future_to_symbol = {
                 executor.submit(self.sentiment_provider.analyze, signal.ticker, signal, news_by_symbol.get(signal.ticker)): signal.ticker
                 for signal in candidate_signals
@@ -261,24 +314,49 @@ class DiscoveryPipeline:
         news_by_symbol = {signal.ticker: signal for signal in news_signals or []}
         sentiment_by_symbol = {signal.ticker: signal for signal in sentiment_signals or []}
         reports: list[Stage4Report] = []
-        for signal in stage3_signals:
-            if signal.ticker not in stage2_by_symbol:
-                continue
-            analyst_consensus = None
-            if self.analyst_provider:
-                try:
-                    analyst_consensus = self.analyst_provider.analyst_consensus(signal.ticker)
-                except ProviderError as exc:
-                    self.stage4_errors[signal.ticker] = str(exc)
-            reports.append(
-                build_report(
-                    stage2_by_symbol[signal.ticker],
+        report_signals = [signal for signal in stage3_signals if signal.ticker in stage2_by_symbol]
+        with ThreadPoolExecutor(max_workers=self._workers("stage4")) as executor:
+            future_to_symbol = {
+                executor.submit(
+                    self._build_stage4_report,
                     signal,
-                    analyst_consensus,
+                    stage2_by_symbol[signal.ticker],
                     news_by_symbol.get(signal.ticker),
                     sentiment_by_symbol.get(signal.ticker),
-                )
-            )
+                ): signal.ticker
+                for signal in report_signals
+            }
+            for future in as_completed(future_to_symbol):
+                symbol = future_to_symbol[future]
+                try:
+                    reports.append(future.result())
+                except ProviderError as exc:
+                    self.stage4_errors[symbol] = str(exc)
         reports.sort(key=lambda item: item.confidence_score, reverse=True)
         self.state.save_stage4(reports)
         return reports
+
+    def _build_stage4_report(
+        self,
+        signal: Stage3Signal,
+        stage2: Stage2Candidate,
+        news: NewsSignal | None,
+        sentiment: SentimentSignal | None,
+    ) -> Stage4Report:
+        analyst_consensus = self.analyst_provider.analyst_consensus(signal.ticker) if self.analyst_provider else None
+        return build_report(stage2, signal, analyst_consensus, news, sentiment)
+
+    def _workers(self, stage: str) -> int:
+        configured = {
+            "stage1": self.config.stage1_workers,
+            "stage2": self.config.stage2_workers,
+            "stage3": self.config.stage3_workers,
+            "news": self.config.news_workers,
+            "sentiment": self.config.sentiment_workers,
+            "stage4": self.config.stage4_workers,
+        }[stage]
+        if configured is not None:
+            return max(1, configured)
+        if stage == "sentiment":
+            return min(self.config.max_workers, 3)
+        return self.config.max_workers

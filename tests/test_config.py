@@ -45,11 +45,20 @@ class ConfigTests(unittest.TestCase):
         env_path = Path(".env")
         original_text = env_path.read_text() if env_path.exists() else None
         try:
-            env_path.write_text("POLYGON_API_KEY=polygon\nFMP_API_KEY=fmp\nROIC_API_KEY=roic\nMAX_WORKERS=3\n")
+            env_path.write_text(
+                "POLYGON_API_KEY=polygon\n"
+                "FMP_API_KEY=fmp\n"
+                "ROIC_API_KEY=roic\n"
+                "MAX_WORKERS=3\n"
+                "STAGE1_WORKERS=9\n"
+                "SENTIMENT_WORKERS=2\n"
+            )
             os.environ.pop("POLYGON_API_KEY", None)
             os.environ.pop("FMP_API_KEY", None)
             os.environ.pop("ROIC_API_KEY", None)
             os.environ.pop("MAX_WORKERS", None)
+            os.environ.pop("STAGE1_WORKERS", None)
+            os.environ.pop("SENTIMENT_WORKERS", None)
 
             config = PipelineConfig.from_env()
 
@@ -57,6 +66,8 @@ class ConfigTests(unittest.TestCase):
             self.assertEqual(config.fmp_api_key, "fmp")
             self.assertEqual(config.roic_api_key, "roic")
             self.assertEqual(config.max_workers, 3)
+            self.assertEqual(config.stage1_workers, 9)
+            self.assertEqual(config.sentiment_workers, 2)
         finally:
             if original_text is None:
                 env_path.unlink(missing_ok=True)
@@ -66,6 +77,8 @@ class ConfigTests(unittest.TestCase):
             os.environ.pop("FMP_API_KEY", None)
             os.environ.pop("ROIC_API_KEY", None)
             os.environ.pop("MAX_WORKERS", None)
+            os.environ.pop("STAGE1_WORKERS", None)
+            os.environ.pop("SENTIMENT_WORKERS", None)
 
 
 if __name__ == "__main__":

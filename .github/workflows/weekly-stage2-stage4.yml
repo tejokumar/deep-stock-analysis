@@ -23,6 +23,11 @@ jobs:
       XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
       XAI_SENTIMENT_MODEL: ${{ vars.XAI_SENTIMENT_MODEL || 'grok-4.3' }}
       MAX_WORKERS: "5"
+      STAGE2_WORKERS: "5"
+      STAGE3_WORKERS: "6"
+      NEWS_WORKERS: "12"
+      SENTIMENT_WORKERS: "2"
+      STAGE4_WORKERS: "5"
       SHORTLIST_MIN_SCORE: "30"
 
     steps:
@@ -70,9 +75,17 @@ jobs:
             --state-path pipeline_state.db \
             --reports-dir "${REPORT_RUN_DIR}" \
             --shortlist-min-score 30 \
+            --stage3-min-confidence 90 \
+            --high-conviction-only \
+            --max-reports 20 \
             --max-sentiment-candidates 50 \
             --max-index 20 \
-            --progress-every 250
+            --stage2-workers 5 \
+            --stage3-workers 6 \
+            --news-workers 12 \
+            --sentiment-workers 2 \
+            --stage4-workers 5 \
+            --progress-every 50
 
       - name: Update reports index
         run: |

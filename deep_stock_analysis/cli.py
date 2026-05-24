@@ -15,6 +15,7 @@ from .providers import FmpClient, PolygonClient, RoicClient, SampleProvider
 from .sentiment import XaiSentimentClient, fallback_sentiment
 from .models import Stage4Report
 from .state import PipelineState
+from .watchlists import WATCHLISTS
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -26,8 +27,22 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--limit", type=int, default=1000, help="Maximum number of tickers to scan.")
     parser.add_argument("--all-tickers", action="store_true", help="Follow Polygon pagination and scan the full active ticker universe.")
+    parser.add_argument("--watchlist", choices=sorted(WATCHLISTS), default=None, help="Limit Stage 1 to a named curated ticker universe.")
+    parser.add_argument("--symbols", default=None, help="Comma or whitespace separated symbols to scan instead of the full universe.")
+    parser.add_argument("--symbols-file", default=None, help="File containing comma or whitespace separated symbols to scan.")
+    parser.add_argument("--stage1-workers", type=int, default=None, help="Override Stage 1 Polygon price/detail parallelism.")
+    parser.add_argument("--stage2-workers", type=int, default=None, help="Override Stage 2 fundamentals parallelism.")
+    parser.add_argument("--stage3-workers", type=int, default=None, help="Override Stage 3 transcript parallelism.")
+    parser.add_argument("--news-workers", type=int, default=None, help="Override Polygon news parallelism.")
+    parser.add_argument("--sentiment-workers", type=int, default=None, help="Override xAI sentiment parallelism.")
+    parser.add_argument("--stage4-workers", type=int, default=None, help="Override Stage 4 analyst/report parallelism.")
     parser.add_argument("--shortlist-min-score", type=float, default=None, help="Override Stage 2 shortlist threshold.")
     parser.add_argument("--stage3-min-confidence", type=int, default=85, help="Minimum Stage 3 transcript confidence.")
+    parser.add_argument("--high-conviction-only", action="store_true", help="Only write reports that pass strict conviction filters.")
+    parser.add_argument("--min-report-score", type=float, default=None, help="Minimum final report score required for Stage 4 output.")
+    parser.add_argument("--min-report-thesis", type=float, default=None, help="Minimum thesis score required for Stage 4 output.")
+    parser.add_argument("--min-report-believability", type=int, default=None, help="Minimum sentiment believability required for Stage 4 output.")
+    parser.add_argument("--max-reports", type=int, default=None, help="Maximum number of Stage 4 report files to write.")
     parser.add_argument("--reports-dir", default="reports", help="Directory for Stage 4 markdown reports.")
     parser.add_argument("--state-path", default=None, help="SQLite state path.")
     parser.add_argument("--sample-data", default=None, help="Run against a local sample JSON file.")
@@ -47,6 +62,8 @@ def main(argv: list[str] | None = None) -> int:
     config = PipelineConfig.from_env(args.state_path)
     if args.shortlist_min_score is not None:
         config = replace(config, shortlist_min_score=args.shortlist_min_score)
+    config = _apply_worker_overrides(config, args)
+    requested_symbols = _requested_symbols(args)
     state = PipelineState(config.state_path)
 
     try:
@@ -115,8 +132,11 @@ def main(argv: list[str] | None = None) -> int:
                 stage1_candidates = state.load_stage1(max_age_hours=args.cache_max_age_hours)
                 print(f"Stage 1 loaded {len(stage1_candidates)} cached liquid equities.", flush=True)
             else:
-                stage1_limit = None if args.all_tickers else args.limit
-                stage1_candidates = pipeline.run_stage1(limit=stage1_limit, progress_every=args.progress_every)
+                if requested_symbols:
+                    stage1_candidates = pipeline.run_stage1_symbols(requested_symbols, progress_every=args.progress_every)
+                else:
+                    stage1_limit = None if args.all_tickers else args.limit
+                    stage1_candidates = pipeline.run_stage1(limit=stage1_limit, progress_every=args.progress_every)
             print(f"Stage 1 retained {len(stage1_candidates)} liquid equities.", flush=True)
             _print_error_summary("Stage 1", pipeline.stage1_errors)
 
@@ -131,8 +151,11 @@ def main(argv: list[str] | None = None) -> int:
                         stage1_candidates = state.load_stage1(max_age_hours=args.cache_max_age_hours)
                         print(f"Stage 1 loaded {len(stage1_candidates)} cached liquid equities.", flush=True)
                     else:
-                        stage1_limit = None if args.all_tickers else args.limit
-                        stage1_candidates = pipeline.run_stage1(limit=stage1_limit, progress_every=args.progress_every)
+                        if requested_symbols:
+                            stage1_candidates = pipeline.run_stage1_symbols(requested_symbols, progress_every=args.progress_every)
+                        else:
+                            stage1_limit = None if args.all_tickers else args.limit
+                            stage1_candidates = pipeline.run_stage1(limit=stage1_limit, progress_every=args.progress_every)
                 stage2_candidates = pipeline.run_stage2(stage1_candidates, progress_every=max(1, args.progress_every // 2))
             print(f"Stage 2 shortlisted {len(stage2_candidates)} anomaly candidates.", flush=True)
             _print_error_summary("Stage 2", pipeline.stage2_errors)
@@ -189,6 +212,15 @@ def main(argv: list[str] | None = None) -> int:
 
         if args.stage in {"stage4", "stage1-stage4"}:
             reports = pipeline.run_stage4(stage2_candidates, stage3_signals, news_signals, sentiment_signals)
+            reports = filter_reports(
+                reports,
+                state,
+                high_conviction_only=args.high_conviction_only,
+                min_report_score=args.min_report_score,
+                min_report_thesis=args.min_report_thesis,
+                min_report_believability=args.min_report_believability,
+                max_reports=args.max_reports,
+            )
             _print_error_summary("Stage 4", pipeline.stage4_errors)
             reports_dir = Path(args.reports_dir)
             reports_dir.mkdir(parents=True, exist_ok=True)
@@ -203,6 +235,41 @@ def main(argv: list[str] | None = None) -> int:
         state.close()
 
     return 0
+
+
+def _requested_symbols(args) -> list[str]:
+    chunks: list[str] = []
+    if args.watchlist:
+        chunks.append(WATCHLISTS[args.watchlist])
+    if args.symbols:
+        chunks.append(args.symbols)
+    if args.symbols_file:
+        chunks.append(Path(args.symbols_file).read_text())
+    return _parse_symbols(" ".join(chunks))
+
+
+def _apply_worker_overrides(config: PipelineConfig, args) -> PipelineConfig:
+    overrides = {
+        "stage1_workers": args.stage1_workers,
+        "stage2_workers": args.stage2_workers,
+        "stage3_workers": args.stage3_workers,
+        "news_workers": args.news_workers,
+        "sentiment_workers": args.sentiment_workers,
+        "stage4_workers": args.stage4_workers,
+    }
+    return replace(config, **{key: value for key, value in overrides.items() if value is not None})
+
+
+def _parse_symbols(raw_symbols: str) -> list[str]:
+    seen = set()
+    symbols = []
+    for token in re.split(r"[\s,]+", raw_symbols.upper()):
+        symbol = token.strip()
+        if not symbol or symbol in seen:
+            continue
+        symbols.append(symbol)
+        seen.add(symbol)
+    return symbols
 
 
 def _print_error_summary(stage_name: str, errors: dict[str, str]) -> None:
@@ -306,6 +373,55 @@ def write_report_index(reports_dir: Path, reports, state: PipelineState, max_row
             )
         )
     (reports_dir / "index.md").write_text("\n".join(rows) + "\n")
+
+
+def filter_reports(
+    reports: list[Stage4Report],
+    state: PipelineState,
+    high_conviction_only: bool = False,
+    min_report_score: float | None = None,
+    min_report_thesis: float | None = None,
+    min_report_believability: int | None = None,
+    max_reports: int | None = None,
+) -> list[Stage4Report]:
+    if high_conviction_only:
+        min_report_score = 100.0 if min_report_score is None else min_report_score
+        min_report_thesis = 75.0 if min_report_thesis is None else min_report_thesis
+        min_report_believability = 75 if min_report_believability is None else min_report_believability
+        allowed_actions = {"Early Accumulation Candidate", "Confirmed Breakout - Buy Pullbacks"}
+    else:
+        allowed_actions = None
+
+    stage2_by_symbol = {candidate.symbol: candidate for candidate in state.load_stage2()}
+    filtered = []
+    for report in reports:
+        metrics = _extract_report_metrics(report.markdown)
+        final_score = _final_score(report.markdown, stage2_by_symbol.get(report.symbol))
+        thesis = _metric_number(metrics.get("thesis"))
+        believability = _metric_number(metrics.get("believability"))
+        action = metrics.get("action", "")
+
+        if min_report_score is not None and final_score < min_report_score:
+            continue
+        if min_report_thesis is not None and (thesis is None or thesis < min_report_thesis):
+            continue
+        if min_report_believability is not None and (believability is None or believability < min_report_believability):
+            continue
+        if allowed_actions is not None and action not in allowed_actions:
+            continue
+        filtered.append(report)
+
+    filtered.sort(key=lambda report: _final_score(report.markdown, stage2_by_symbol.get(report.symbol)), reverse=True)
+    if max_reports is not None:
+        filtered = filtered[:max_reports]
+    return filtered
+
+
+def _metric_number(value: str | None) -> float | None:
+    if not value:
+        return None
+    match = re.search(r"-?[0-9.]+", value)
+    return float(match.group(0)) if match else None
 
 
 def _markdown_row(values: list[str], escape: bool = True) -> str:
