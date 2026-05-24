@@ -138,8 +138,8 @@ class DiscoveryPipeline:
                 if price_stats:
                     candidate = replace(
                         candidate,
-                        sector=ticker.sector if ticker else None,
-                        industry=ticker.industry if ticker else snapshot.industry,
+                        sector=ticker.sector if ticker and ticker.sector else None,
+                        industry=(ticker.industry if ticker and ticker.industry else snapshot.industry),
                         current_price=price_stats.close_price,
                         volatility_6m=price_stats.volatility_6m,
                         return_6m=price_stats.return_6m,

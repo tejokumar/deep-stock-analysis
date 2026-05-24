@@ -195,6 +195,8 @@ def main(argv: list[str] | None = None) -> int:
             for report in reports:
                 report_path = reports_dir / f"{report.symbol}.md"
                 report_path.write_text(report.markdown)
+            if not args.sample_data and config.polygon_api_key:
+                refresh_index_details(state, PolygonClient(config.polygon_api_key), reports, max(1, args.progress_every // 4))
             write_report_index(reports_dir, reports, state, max_rows=args.max_index)
             print(f"Stage 4 generated {len(reports)} catalyst-linked reports in {reports_dir}.", flush=True)
     finally:
