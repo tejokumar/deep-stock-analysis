@@ -14,6 +14,9 @@ class PipelineConfig:
     state_path: Path
     roic_api_key: str | None = None
     xai_api_key: str | None = None
+    alpaca_api_key: str | None = None
+    alpaca_secret_key: str | None = None
+    alpaca_base_url: str = "https://paper-api.alpaca.markets"
     xai_sentiment_model: str = "grok-4.3"
     fmp_fundamental_period: str = "annual"
     max_workers: int = 5
@@ -34,6 +37,9 @@ class PipelineConfig:
             polygon_api_key=os.getenv("POLYGON_API_KEY"),
             fmp_api_key=os.getenv("FMP_API_KEY"),
             xai_api_key=os.getenv("XAI_API_KEY"),
+            alpaca_api_key=os.getenv("ALPACA_API_KEY"),
+            alpaca_secret_key=os.getenv("ALPACA_SECRET_KEY"),
+            alpaca_base_url=os.getenv("ALPACA_BASE_URL", "https://paper-api.alpaca.markets"),
             roic_api_key=os.getenv("ROIC_API_KEY"),
             xai_sentiment_model=os.getenv("XAI_SENTIMENT_MODEL", "grok-4.3"),
             fmp_fundamental_period=os.getenv("FMP_FUNDAMENTAL_PERIOD", "annual"),

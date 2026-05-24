@@ -287,6 +287,29 @@ To view repository reports:
 
 Stage 1 alone does not generate reports. It only prepares the cached stock universe.
 
+## Paper Trading Layer
+
+The paper trading layer uses Alpaca paper trading and consumes the latest finalized report run.
+
+Default rules:
+
+- Maximum positions: `7`.
+- Maximum deployed equity: `60%`.
+- Rank 1-3 target weight: `10%` each.
+- Rank 4-7 target weight: `6%` each.
+- Minimum hold before removing stale names: `20` days.
+- Stop-loss exit: `15%` below Alpaca average entry.
+- Maximum hold before forced exit/review: `180` days.
+- Buy only when the current price is within `5%` above the report's entry-zone high.
+
+The trading command is dry-run by default. It submits Alpaca paper orders only when `--execute-paper-trades` is present.
+The scheduled workflow commits `paper/state.json` as a lightweight ledger so holding-period rules survive across daily GitHub Actions runs. The trader only sells positions tracked in that ledger, so unrelated Alpaca paper positions are not liquidated.
+
+Schedule:
+
+- Research can stay weekly because the thesis and report list are structural.
+- Position management should run daily on market days so stop-loss exits and stale-name exits do not wait until the next weekly research run.
+
 ## Secrets and Configuration
 
 The GitHub Actions jobs use the `production` environment.

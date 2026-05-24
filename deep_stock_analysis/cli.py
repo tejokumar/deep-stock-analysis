@@ -10,6 +10,7 @@ import sys
 
 from .config import PipelineConfig
 from .news import news_to_stage3_signal
+from .paper import AlpacaPaperClient, build_order_plan, execute_order_plan, latest_report_dir, load_candidates_from_index, load_ledger, update_ledger
 from .pipeline import DiscoveryPipeline
 from .providers import FmpClient, PolygonClient, RoicClient, SampleProvider
 from .sentiment import XaiSentimentClient, fallback_sentiment
@@ -22,7 +23,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Run the deep stock discovery bot.")
     parser.add_argument(
         "--stage",
-        choices=["stage1", "stage2", "stage3", "stage4", "stage1-stage2", "stage1-stage3", "stage1-stage4", "index"],
+        choices=["stage1", "stage2", "stage3", "stage4", "stage1-stage2", "stage1-stage3", "stage1-stage4", "index", "paper-trade"],
         default="stage1-stage2",
     )
     parser.add_argument("--limit", type=int, default=1000, help="Maximum number of tickers to scan.")
@@ -54,6 +55,16 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--refresh-index-prices", action="store_true", help="Refresh Polygon price performance for report symbols before writing index.")
     parser.add_argument("--refresh-index-details", action="store_true", help="Refresh Polygon company name, sector, and industry for report symbols before writing index.")
     parser.add_argument("--max-index", type=int, default=None, help="Maximum ranked rows to show in index.md.")
+    parser.add_argument("--paper-reports-root", default="reports", help="Root folder containing timestamped report runs.")
+    parser.add_argument("--paper-reports-dir", default=None, help="Specific report folder to trade from. Defaults to latest timestamped run.")
+    parser.add_argument("--paper-ledger-path", default="paper/state.json", help="Local paper-trading ledger path.")
+    parser.add_argument("--paper-max-positions", type=int, default=7, help="Maximum paper positions.")
+    parser.add_argument("--paper-max-deployed-pct", type=float, default=0.60, help="Maximum equity deployed across paper positions.")
+    parser.add_argument("--paper-entry-buffer-pct", type=float, default=0.05, help="Allow buys up to this percent above entry-zone high.")
+    parser.add_argument("--paper-stop-loss-pct", type=float, default=0.15, help="Paper exit threshold from Alpaca average entry.")
+    parser.add_argument("--paper-min-hold-days", type=int, default=20, help="Minimum days before selling names absent from latest list.")
+    parser.add_argument("--paper-max-hold-days", type=int, default=180, help="Maximum days before forced paper review/exit.")
+    parser.add_argument("--execute-paper-trades", action="store_true", help="Submit Alpaca paper orders. Without this, only prints a dry-run plan.")
     return parser
 
 
@@ -83,6 +94,9 @@ def main(argv: list[str] | None = None) -> int:
             write_report_index(reports_dir, reports, state, max_rows=args.max_index)
             print(f"Regenerated ranked index for {len(reports)} reports in {reports_dir}.", flush=True)
             return 0
+
+        if args.stage == "paper-trade":
+            return run_paper_trade(args, config)
 
         if args.sample_data:
             provider = SampleProvider(Path(args.sample_data))
@@ -234,6 +248,57 @@ def main(argv: list[str] | None = None) -> int:
     finally:
         state.close()
 
+    return 0
+
+
+def run_paper_trade(args, config: PipelineConfig) -> int:
+    if not config.alpaca_api_key or not config.alpaca_secret_key:
+        print("ALPACA_API_KEY and ALPACA_SECRET_KEY are required for paper trading.", file=sys.stderr, flush=True)
+        return 2
+
+    reports_dir = Path(args.paper_reports_dir) if args.paper_reports_dir else latest_report_dir(Path(args.paper_reports_root))
+    if not reports_dir:
+        print(f"No timestamped report directory found under {args.paper_reports_root}.", file=sys.stderr, flush=True)
+        return 2
+    index_path = reports_dir / "index.md"
+    if not index_path.exists():
+        print(f"Missing report index: {index_path}", file=sys.stderr, flush=True)
+        return 2
+
+    candidates = load_candidates_from_index(index_path)
+    if not candidates:
+        print(f"No trade candidates found in {index_path}.", file=sys.stderr, flush=True)
+        return 0
+
+    client = AlpacaPaperClient(config.alpaca_api_key, config.alpaca_secret_key, config.alpaca_base_url)
+    account = client.account()
+    positions = client.positions()
+    ledger_path = Path(args.paper_ledger_path)
+    ledger = load_ledger(ledger_path)
+    orders = build_order_plan(
+        candidates,
+        account,
+        positions,
+        ledger,
+        max_positions=args.paper_max_positions,
+        max_deployed_pct=args.paper_max_deployed_pct,
+        entry_buffer_pct=args.paper_entry_buffer_pct,
+        stop_loss_pct=args.paper_stop_loss_pct,
+        min_hold_days=args.paper_min_hold_days,
+        max_hold_days=args.paper_max_hold_days,
+    )
+
+    print(f"Paper trading from {reports_dir} with {len(candidates)} candidates.", flush=True)
+    if not orders:
+        print("No paper orders needed.", flush=True)
+        return 0
+    for order in orders:
+        amount = f"${order.notional:,.2f}" if order.notional is not None else f"{order.qty:g} shares"
+        mode = "EXECUTE" if args.execute_paper_trades else "DRY RUN"
+        print(f"{mode}: {order.side.upper()} {order.symbol} {amount} - {order.reason}", flush=True)
+
+    execute_order_plan(client, orders, execute=args.execute_paper_trades)
+    update_ledger(ledger_path, orders, execute=args.execute_paper_trades)
     return 0
 
 

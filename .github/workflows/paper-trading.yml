@@ -1,0 +1,62 @@
+name: Paper Trading
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Weekdays after US market open during Pacific daylight time.
+    # GitHub cron is UTC, so adjust this if you want exact 6:45 AM Pacific during standard time.
+    - cron: "45 13 * * 1-5"
+
+permissions:
+  contents: write
+
+jobs:
+  paper_trade:
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 30
+    env:
+      ALPACA_API_KEY: ${{ secrets.ALPACA_API_KEY }}
+      ALPACA_SECRET_KEY: ${{ secrets.ALPACA_SECRET_KEY }}
+      ALPACA_BASE_URL: ${{ vars.ALPACA_BASE_URL || 'https://paper-api.alpaca.markets' }}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Run tests
+        run: python -m unittest discover -s tests
+
+      - name: Execute Alpaca paper trading plan
+        run: |
+          python -m deep_stock_analysis.cli \
+            --stage paper-trade \
+            --paper-reports-root reports \
+            --paper-max-positions 7 \
+            --paper-max-deployed-pct 0.60 \
+            --paper-entry-buffer-pct 0.05 \
+            --paper-stop-loss-pct 0.15 \
+            --paper-min-hold-days 20 \
+            --paper-max-hold-days 180 \
+            --execute-paper-trades
+
+      - name: Commit paper trading ledger
+        run: |
+          if [ ! -f paper/state.json ]; then
+            echo "No paper ledger changes."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add paper/state.json
+          if git diff --cached --quiet; then
+            echo "No paper ledger changes to commit."
+            exit 0
+          fi
+          git commit -m "Update paper trading ledger"
+          git push

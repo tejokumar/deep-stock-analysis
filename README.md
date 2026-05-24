@@ -114,5 +114,29 @@ Add these GitHub Actions environment secrets before enabling live runs. The work
 Optional repository variable:
 
 - `XAI_SENTIMENT_MODEL`, defaults to `grok-4.3`.
+- `ALPACA_BASE_URL`, defaults to `https://paper-api.alpaca.markets`.
 
 Stage 1 scans the curated watchlist, uploads `pipeline_state.db` as a `stage1-state` artifact, and uses `STAGE1_WORKERS=12`. Stage 2 downloads the latest successful Stage 1 artifact, runs the cached watchlist universe through Stage 2-4 with high-conviction filters, uploads a timestamped `scheduled-reports-*` artifact plus the updated pipeline state, and commits generated markdown reports under `reports/<reverse-time>_<UTC timestamp>/`. The reverse-time prefix makes newer report folders sort first in GitHub, and `reports/README.md` links runs newest-first.
+
+## Paper Trading
+
+The `paper-trade` stage reads the latest committed report run, builds a paper-position plan, and can submit Alpaca paper orders.
+
+Required GitHub environment secrets:
+
+- `ALPACA_API_KEY`
+- `ALPACA_SECRET_KEY`
+
+Dry run locally:
+
+```bash
+python3 -m deep_stock_analysis.cli --stage paper-trade --paper-reports-root reports
+```
+
+Execute against Alpaca paper:
+
+```bash
+python3 -m deep_stock_analysis.cli --stage paper-trade --paper-reports-root reports --execute-paper-trades
+```
+
+The scheduled paper workflow commits `paper/state.json` as a lightweight ledger so holding-period rules survive across GitHub Actions runs. It only sells positions tracked in that ledger, so unrelated Alpaca paper positions are left alone.
