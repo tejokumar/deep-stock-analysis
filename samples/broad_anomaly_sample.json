@@ -1,0 +1,94 @@
+{
+  "tickers": [
+    {"symbol": "MU", "name": "Micron Technology", "exchange": "XNAS", "type": "CS"},
+    {"symbol": "AMD", "name": "Advanced Micro Devices", "exchange": "XNAS", "type": "CS"},
+    {"symbol": "SNDK", "name": "Sandisk", "exchange": "XNAS", "type": "CS"},
+    {"symbol": "ARM", "name": "Arm Holdings", "exchange": "XNAS", "type": "CS"},
+    {"symbol": "PENNY", "name": "Tiny Illiquid Co", "exchange": "OTC", "type": "CS"}
+  ],
+  "price_stats": {
+    "MU": {"close_price": 86.4, "avg_volume_20d": 14500000, "volatility_6m": 0.032},
+    "AMD": {"close_price": 151.2, "avg_volume_20d": 62000000, "volatility_6m": 0.061},
+    "SNDK": {"close_price": 48.5, "avg_volume_20d": 3900000, "volatility_6m": 0.044},
+    "ARM": {"close_price": 129.1, "avg_volume_20d": 7800000, "volatility_6m": 0.071},
+    "PENNY": {"close_price": 1.4, "avg_volume_20d": 120000, "volatility_6m": 0.12}
+  },
+  "fundamentals": {
+    "MU": {
+      "capex_growth_yoy": 0.55,
+      "gross_margin_delta": 0.025,
+      "revenue_growth": 0.03,
+      "ev_to_tangible_book": 1.8,
+      "industry": "Semiconductors",
+      "debt_to_equity": 0.21,
+      "revenue_growth_acceleration": 0.11,
+      "free_cash_flow_margin_delta": 0.01
+    },
+    "AMD": {
+      "capex_growth_yoy": 0.08,
+      "gross_margin_delta": 0.04,
+      "revenue_growth": 0.02,
+      "ev_to_tangible_book": 7.2,
+      "industry": "Semiconductors",
+      "debt_to_equity": 0.04,
+      "revenue_growth_acceleration": 0.09,
+      "free_cash_flow_margin_delta": 0.04
+    },
+    "SNDK": {
+      "capex_growth_yoy": 0.18,
+      "gross_margin_delta": 0.01,
+      "revenue_growth": -0.02,
+      "ev_to_tangible_book": 0.95,
+      "industry": "Computer Hardware",
+      "debt_to_equity": 0.31,
+      "revenue_growth_acceleration": 0.03,
+      "free_cash_flow_margin_delta": 0.05
+    },
+    "ARM": {
+      "capex_growth_yoy": 0.04,
+      "gross_margin_delta": 0.015,
+      "revenue_growth": 0.14,
+      "ev_to_tangible_book": 12.1,
+      "industry": "Semiconductors",
+      "debt_to_equity": 0.0,
+      "revenue_growth_acceleration": 0.16,
+      "free_cash_flow_margin_delta": 0.06
+    }
+  },
+  "transcripts": {
+    "MU": {
+      "quarter": "Q2",
+      "year": 2026,
+      "content": "Demand visibility improved materially this quarter. We saw record backlog and bookings exceeded shipments across high bandwidth products. Several customers have reserved capacity through long-term supply agreements, and the production ramp is ahead of plan. Higher ASP mix and favorable pricing are flowing through gross margin expansion as utilization improved."
+    },
+    "AMD": {
+      "quarter": "Q2",
+      "year": 2026,
+      "content": "We continue to see strong design win momentum for the new platform. Customer commitments are increasing and the ramp is broadening across cloud deployments. Mix shift toward premium accelerators is supporting higher ASP and operating leverage."
+    },
+    "SNDK": {
+      "quarter": "Q2",
+      "year": 2026,
+      "content": "The market remains cyclical, but utilization improved. We are seeing early price increases in select enterprise products and cost absorption is helping margins."
+    },
+    "ARM": {
+      "quarter": "Q2",
+      "year": 2026,
+      "content": "Royalty mix shift continues as customers adopt new platform designs. Design win activity is strong and higher ASP opportunities are emerging across premium compute, with operating leverage visible in the model."
+    }
+  },
+  "news": {
+    "SNDK": [
+      {
+        "title": "SNDK announces strategic customer win and supply agreement for AI data center products",
+        "description": "The company said the new contract award supports a production ramp in the second half."
+      }
+    ],
+    "ARM": [
+      {
+        "title": "ARM price target raised after premium compute design wins",
+        "description": "Analysts cited AI infrastructure demand and higher ASP opportunities."
+      }
+    ]
+  }
+}

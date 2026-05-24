@@ -1,0 +1,12 @@
+[project]
+name = "deep-stock-analysis"
+version = "0.1.0"
+description = "Multi-stage stock anomaly discovery bot."
+requires-python = ">=3.11"
+dependencies = []
+
+[project.scripts]
+deep-stock-analysis = "deep_stock_analysis.cli:main"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
