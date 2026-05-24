@@ -1,4 +1,6 @@
 import unittest
+from pathlib import Path
+import tempfile
 
 from deep_stock_analysis.config import PipelineConfig
 from deep_stock_analysis.models import PriceStats, Stage1Candidate, Ticker
@@ -14,7 +16,9 @@ class BrokenFundamentalProvider:
 
 class ErrorHandlingTests(unittest.TestCase):
     def test_stage2_skips_provider_errors(self):
-        config = PipelineConfig(None, None, state_path="/private/tmp/deep-stock-error-test.db")
+        state_path = Path(tempfile.gettempdir()) / "deep-stock-error-test.db"
+        state_path.unlink(missing_ok=True)
+        config = PipelineConfig(None, None, state_path=state_path)
         state = PipelineState(config.state_path)
         try:
             pipeline = DiscoveryPipeline(config, state, universe_provider=None, fundamental_provider=BrokenFundamentalProvider())
@@ -28,6 +32,7 @@ class ErrorHandlingTests(unittest.TestCase):
             results = pipeline.run_stage2(stage1)
         finally:
             state.close()
+            state_path.unlink(missing_ok=True)
 
         self.assertEqual(results, [])
         self.assertIn("TEST", pipeline.stage2_errors)

@@ -1,5 +1,6 @@
 import unittest
 from pathlib import Path
+import tempfile
 
 from deep_stock_analysis.config import PipelineConfig
 from deep_stock_analysis.pipeline import DiscoveryPipeline
@@ -13,7 +14,7 @@ class PipelineTests(unittest.TestCase):
         config = PipelineConfig(
             polygon_api_key=None,
             fmp_api_key=None,
-            state_path=Path("/private/tmp/deep-stock-test.db"),
+            state_path=Path(tempfile.gettempdir()) / "deep-stock-test.db",
             shortlist_min_score=30,
         )
         if config.state_path.exists():
@@ -26,6 +27,7 @@ class PipelineTests(unittest.TestCase):
             stage2 = pipeline.run_stage2(stage1, progress_every=0)
         finally:
             state.close()
+            config.state_path.unlink(missing_ok=True)
 
         self.assertNotIn("PENNY", {candidate.ticker.symbol for candidate in stage1})
         self.assertGreaterEqual({candidate.symbol for candidate in stage2}, {"MU", "AMD", "SNDK", "ARM"})

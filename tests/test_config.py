@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+import tempfile
 import unittest
 
 from deep_stock_analysis.config import PipelineConfig, load_dotenv
@@ -7,7 +8,7 @@ from deep_stock_analysis.config import PipelineConfig, load_dotenv
 
 class ConfigTests(unittest.TestCase):
     def test_load_dotenv_reads_values_without_overriding_shell(self):
-        env_path = Path("/private/tmp/deep-stock-test.env")
+        env_path = Path(tempfile.gettempdir()) / "deep-stock-test.env"
         env_path.write_text(
             "\n".join(
                 [

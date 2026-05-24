@@ -1,5 +1,6 @@
 import unittest
 from pathlib import Path
+import tempfile
 
 from deep_stock_analysis.models import FundamentalSnapshot, PriceStats, SieveHit, Stage1Candidate, Stage2Candidate, Ticker
 from deep_stock_analysis.state import PipelineState
@@ -7,7 +8,7 @@ from deep_stock_analysis.state import PipelineState
 
 class StateCacheTests(unittest.TestCase):
     def test_load_cached_stage1_and_stage2(self):
-        path = Path("/private/tmp/deep-stock-state-cache-test.db")
+        path = Path(tempfile.gettempdir()) / "deep-stock-state-cache-test.db"
         path.unlink(missing_ok=True)
         state = PipelineState(path)
         try:
