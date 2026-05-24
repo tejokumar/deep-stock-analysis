@@ -4,4 +4,6 @@ __pycache__/
 *.py[cod]
 *.db
 *.sqlite
-reports/
+reports/*
+!reports/scheduled/
+!reports/scheduled/*.md

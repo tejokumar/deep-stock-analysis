@@ -257,13 +257,17 @@ This job:
 - Downloads the latest successful Stage 1 artifact.
 - Runs Stage 2, Stage 3, and Stage 4.
 - Uploads generated reports as an artifact named `scheduled-reports`.
+- Commits generated markdown reports to `reports/scheduled/` in this repository.
 - Uploads the updated pipeline database.
 
 ## Where Reports Are Found
 
-Reports generated in GitHub Actions are not committed to the repository. They are stored as workflow artifacts.
+Reports generated in GitHub Actions are stored in two places:
 
-To view them:
+- As workflow artifacts named `scheduled-reports`.
+- In the repository under `reports/scheduled/` after the Stage 2-4 workflow commits them.
+
+To view artifact reports:
 
 1. Go to the GitHub repository.
 2. Open the Actions tab.
@@ -271,6 +275,12 @@ To view them:
 4. Scroll to Artifacts.
 5. Download `scheduled-reports`.
 6. Open `reports/scheduled/index.md`.
+
+To view repository reports:
+
+1. Go to the repository.
+2. Open the `reports/scheduled/` folder.
+3. Start with `index.md`.
 
 Stage 1 alone does not generate reports. It only prepares the cached stock universe.
 

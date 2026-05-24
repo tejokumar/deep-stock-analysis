@@ -115,4 +115,4 @@ Optional repository variable:
 
 - `XAI_SENTIMENT_MODEL`, defaults to `grok-4.3`.
 
-Stage 1 uploads `pipeline_state.db` as a `stage1-state` artifact. Stage 2 downloads the latest successful Stage 1 artifact, runs the cached Stage 1 universe through Stage 2-4, and uploads `scheduled-reports` plus the updated pipeline state.
+Stage 1 uploads `pipeline_state.db` as a `stage1-state` artifact. Stage 2 downloads the latest successful Stage 1 artifact, runs the cached Stage 1 universe through Stage 2-4, uploads `scheduled-reports` plus the updated pipeline state, and commits the generated markdown reports under `reports/scheduled/`.
