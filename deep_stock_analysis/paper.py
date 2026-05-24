@@ -194,6 +194,57 @@ def execute_order_plan(client: AlpacaPaperClient, orders: list[PaperOrderPlan], 
     return submitted
 
 
+def write_plan_markdown(
+    path: Path,
+    reports_dir: Path,
+    candidates: list[TradeCandidate],
+    orders: list[PaperOrderPlan],
+    account: dict[str, Any],
+    execute: bool,
+) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    equity = account.get("equity") or account.get("portfolio_value") or ""
+    rows = [
+        "# Paper Trading Plan",
+        "",
+        f"- Mode: {'execute' if execute else 'dry-run'}",
+        f"- Reports: `{reports_dir}`",
+        f"- Account equity: {_money(equity)}",
+        f"- Candidates: {len(candidates)}",
+        f"- Planned orders: {len(orders)}",
+        "",
+        "## Candidate List",
+        "",
+        "| Rank | Symbol | Score | Current | Entry High | Believability | Hype |",
+        "|---:|---|---:|---:|---:|---:|---:|",
+    ]
+    for candidate in candidates:
+        rows.append(
+            "| "
+            + " | ".join(
+                [
+                    str(candidate.rank),
+                    candidate.symbol,
+                    f"{candidate.score:.1f}",
+                    _money(candidate.current_price),
+                    _money(candidate.entry_high),
+                    "" if candidate.believability is None else str(candidate.believability),
+                    "" if candidate.hype is None else str(candidate.hype),
+                ]
+            )
+            + " |"
+        )
+    rows.extend(["", "## Orders", ""])
+    if not orders:
+        rows.append("No orders needed.")
+    else:
+        rows.extend(["| Side | Symbol | Amount | Reason |", "|---|---|---:|---|"])
+        for order in orders:
+            amount = _money(order.notional) if order.notional is not None else f"{order.qty:g} shares"
+            rows.append(f"| {order.side} | {order.symbol} | {amount} | {order.reason.replace('|', '/')} |")
+    path.write_text("\n".join(rows) + "\n")
+
+
 def load_ledger(path: Path) -> dict[str, Any]:
     if not path.exists():
         return {"positions": {}}
@@ -250,3 +301,9 @@ def _entry_number(value: str, index: int) -> float | None:
     if len(matches) <= index:
         return None
     return float(matches[index].replace(",", ""))
+
+
+def _money(value: Any) -> str:
+    if value in (None, ""):
+        return ""
+    return f"${float(value):,.2f}"

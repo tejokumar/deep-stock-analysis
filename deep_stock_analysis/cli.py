@@ -10,7 +10,7 @@ import sys
 
 from .config import PipelineConfig
 from .news import news_to_stage3_signal
-from .paper import AlpacaPaperClient, build_order_plan, execute_order_plan, latest_report_dir, load_candidates_from_index, load_ledger, update_ledger
+from .paper import AlpacaPaperClient, build_order_plan, execute_order_plan, latest_report_dir, load_candidates_from_index, load_ledger, update_ledger, write_plan_markdown
 from .pipeline import DiscoveryPipeline
 from .providers import FmpClient, PolygonClient, RoicClient, SampleProvider
 from .sentiment import XaiSentimentClient, fallback_sentiment
@@ -58,6 +58,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--paper-reports-root", default="reports", help="Root folder containing timestamped report runs.")
     parser.add_argument("--paper-reports-dir", default=None, help="Specific report folder to trade from. Defaults to latest timestamped run.")
     parser.add_argument("--paper-ledger-path", default="paper/state.json", help="Local paper-trading ledger path.")
+    parser.add_argument("--paper-plan-output", default="paper/latest-plan.md", help="Markdown output path for the latest paper-trading plan.")
     parser.add_argument("--paper-max-positions", type=int, default=7, help="Maximum paper positions.")
     parser.add_argument("--paper-max-deployed-pct", type=float, default=0.60, help="Maximum equity deployed across paper positions.")
     parser.add_argument("--paper-entry-buffer-pct", type=float, default=0.05, help="Allow buys up to this percent above entry-zone high.")
@@ -287,6 +288,7 @@ def run_paper_trade(args, config: PipelineConfig) -> int:
         min_hold_days=args.paper_min_hold_days,
         max_hold_days=args.paper_max_hold_days,
     )
+    write_plan_markdown(Path(args.paper_plan_output), reports_dir, candidates, orders, account, args.execute_paper_trades)
 
     print(f"Paper trading from {reports_dir} with {len(candidates)} candidates.", flush=True)
     if not orders:

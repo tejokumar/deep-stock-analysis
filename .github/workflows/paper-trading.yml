@@ -32,7 +32,17 @@ jobs:
       - name: Run tests
         run: python -m unittest discover -s tests
 
+      - name: Skip until Alpaca paper keys are configured
+        run: |
+          if [ -z "$ALPACA_API_KEY" ] || [ -z "$ALPACA_SECRET_KEY" ]; then
+            echo "Alpaca paper keys are not configured yet; skipping paper trading."
+            echo "PAPER_TRADING_READY=false" >> "$GITHUB_ENV"
+            exit 0
+          fi
+          echo "PAPER_TRADING_READY=true" >> "$GITHUB_ENV"
+
       - name: Execute Alpaca paper trading plan
+        if: env.PAPER_TRADING_READY == 'true'
         run: |
           python -m deep_stock_analysis.cli \
             --stage paper-trade \
@@ -46,14 +56,16 @@ jobs:
             --execute-paper-trades
 
       - name: Commit paper trading ledger
+        if: env.PAPER_TRADING_READY == 'true'
         run: |
-          if [ ! -f paper/state.json ]; then
+          if [ ! -f paper/state.json ] && [ ! -f paper/latest-plan.md ]; then
             echo "No paper ledger changes."
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add paper/state.json
+          git pull --rebase origin "${GITHUB_REF_NAME}"
+          git add paper/state.json paper/latest-plan.md
           if git diff --cached --quiet; then
             echo "No paper ledger changes to commit."
             exit 0

@@ -2,7 +2,7 @@ import tempfile
 from pathlib import Path
 import unittest
 
-from deep_stock_analysis.paper import TradeCandidate, build_order_plan, latest_report_dir, load_candidates_from_index
+from deep_stock_analysis.paper import TradeCandidate, build_order_plan, latest_report_dir, load_candidates_from_index, write_plan_markdown
 
 
 class PaperTradingTests(unittest.TestCase):
@@ -48,6 +48,20 @@ class PaperTradingTests(unittest.TestCase):
         self.assertIn(("OLD", "sell"), {(order.symbol, order.side) for order in orders})
         self.assertIn(("AVAV", "buy"), {(order.symbol, order.side) for order in orders})
         self.assertGreater(next(order.notional for order in orders if order.symbol == "AVAV"), 0)
+
+    def test_write_plan_markdown(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "paper" / "latest-plan.md"
+            candidates = [TradeCandidate("AVAV", 1, 114, 174, 169, 183, "Early Accumulation Candidate", 81, 85, 25)]
+            orders = build_order_plan(candidates, {"equity": "100000"}, [], {"positions": {}})
+
+            write_plan_markdown(path, Path("reports/example"), candidates, orders, {"equity": "100000"}, execute=False)
+
+            text = path.read_text()
+
+        self.assertIn("# Paper Trading Plan", text)
+        self.assertIn("AVAV", text)
+        self.assertIn("dry-run", text)
 
 
 if __name__ == "__main__":
