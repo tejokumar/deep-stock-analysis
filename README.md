@@ -102,7 +102,7 @@ The repository includes scheduled GitHub Actions workflows matching `codex.md`:
 - `Weekly Stage 1 Universe`: Saturday 4:00 PM PST, stored as Sunday 00:00 UTC in GitHub cron.
 - `Weekly Stage 2-4 Analysis`: Saturday 8:00 PM PST, stored as Sunday 04:00 UTC in GitHub cron.
 
-Add these repository secrets before enabling live runs:
+Add these GitHub Actions environment secrets before enabling live runs. The workflows use the `production` environment, so create that environment and add the secrets there:
 
 - `POLYGON_API_KEY`
 - `ROIC_API_KEY`

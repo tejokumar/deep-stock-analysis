@@ -13,6 +13,7 @@ permissions:
 jobs:
   stage2_stage4:
     runs-on: ubuntu-latest
+    environment: production
     timeout-minutes: 360
     env:
       GH_TOKEN: ${{ github.token }}
