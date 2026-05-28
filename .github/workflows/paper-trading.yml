@@ -29,6 +29,10 @@ jobs:
         with:
           python-version: "3.11"
 
+      - name: Sync latest branch
+        run: |
+          git pull --ff-only origin "${GITHUB_REF_NAME}"
+
       - name: Run tests
         run: python -m unittest discover -s tests
 
@@ -64,7 +68,6 @@ jobs:
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git pull --rebase origin "${GITHUB_REF_NAME}"
           git add paper/state.json paper/latest-plan.md
           if git diff --cached --quiet; then
             echo "No paper ledger changes to commit."
