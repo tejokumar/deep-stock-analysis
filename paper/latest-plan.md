@@ -2,7 +2,7 @@
 
 - Mode: execute
 - Reports: `reports/8220349720_2026-05-24T19-17-59Z`
-- Account equity: $102,829.44
+- Account equity: $98,306.48
 - Candidates: 7
 - Planned orders: 0
 
