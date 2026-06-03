@@ -184,7 +184,11 @@ class DiscoveryPipeline:
                     snapshot = future.result()
                 except ProviderError as exc:
                     self.stage2_errors[symbol] = str(exc)
-                    continue
+                    ticker = ticker_by_symbol.get(symbol)
+                    snapshot = FundamentalSnapshot(
+                        symbol=symbol,
+                        industry=ticker.industry if ticker else None,
+                    )
                 candidate = score_candidate(snapshot, price_by_symbol.get(symbol))
                 price_stats = price_by_symbol.get(symbol)
                 ticker = ticker_by_symbol.get(symbol)
@@ -199,6 +203,7 @@ class DiscoveryPipeline:
                         return_ytd=price_stats.return_ytd,
                         return_3m=price_stats.return_3m,
                         return_1m=price_stats.return_1m,
+                        return_2w=price_stats.return_2w,
                         return_1w=price_stats.return_1w,
                         return_1d=price_stats.return_1d,
                     )

@@ -108,6 +108,7 @@ def load_candidates_from_index(index_path: Path) -> list[TradeCandidate]:
         cells = [_clean_cell(cell) for cell in line.strip().strip("|").split("|")]
         if len(cells) < 21:
             continue
+        performance_offset = 1 if len(cells) >= 23 else 0
         rows.append(
             TradeCandidate(
                 symbol=cells[1],
@@ -118,8 +119,8 @@ def load_candidates_from_index(index_path: Path) -> list[TradeCandidate]:
                 current_price=_number(cells[7]) or 0.0,
                 entry_low=_entry_number(cells[8], 0),
                 entry_high=_entry_number(cells[8], 1),
-                believability=int(_number(cells[19]) or 0),
-                hype=int(_number(cells[20]) or 0),
+                believability=int(_number(cells[19 + performance_offset]) or 0),
+                hype=int(_number(cells[20 + performance_offset]) or 0),
             )
         )
     return rows

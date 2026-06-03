@@ -35,6 +35,7 @@ class PipelineState:
                 candidate.price_stats.return_ytd,
                 candidate.price_stats.return_3m,
                 candidate.price_stats.return_1m,
+                candidate.price_stats.return_2w,
                 candidate.price_stats.return_1w,
                 candidate.price_stats.return_1d,
             )
@@ -44,9 +45,9 @@ class PipelineState:
             """
             insert into stage1_candidates(
                 symbol, name, exchange, sector, industry, close_price, avg_volume_20d, volatility_6m,
-                return_6m, return_ytd, return_3m, return_1m, return_1w, return_1d
+                return_6m, return_ytd, return_3m, return_1m, return_2w, return_1w, return_1d
             )
-            values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             on conflict(symbol) do update set
                 name=excluded.name,
                 exchange=excluded.exchange,
@@ -59,6 +60,7 @@ class PipelineState:
                 return_ytd=excluded.return_ytd,
                 return_3m=excluded.return_3m,
                 return_1m=excluded.return_1m,
+                return_2w=excluded.return_2w,
                 return_1w=excluded.return_1w,
                 return_1d=excluded.return_1d,
                 updated_at=current_timestamp
@@ -82,6 +84,7 @@ class PipelineState:
                 candidate.return_ytd,
                 candidate.return_3m,
                 candidate.return_1m,
+                candidate.return_2w,
                 candidate.return_1w,
                 candidate.return_1d,
             )
@@ -91,9 +94,9 @@ class PipelineState:
             """
             insert into stage2_candidates(
                 symbol, score, hits_json, snapshot_json, sector, industry, current_price, volatility_6m,
-                return_6m, return_ytd, return_3m, return_1m, return_1w, return_1d
+                return_6m, return_ytd, return_3m, return_1m, return_2w, return_1w, return_1d
             )
-            values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             on conflict(symbol) do update set
                 score=excluded.score,
                 hits_json=excluded.hits_json,
@@ -106,6 +109,7 @@ class PipelineState:
                 return_ytd=excluded.return_ytd,
                 return_3m=excluded.return_3m,
                 return_1m=excluded.return_1m,
+                return_2w=excluded.return_2w,
                 return_1w=excluded.return_1w,
                 return_1d=excluded.return_1d,
                 updated_at=current_timestamp
@@ -123,7 +127,7 @@ class PipelineState:
         rows = self.connection.execute(
             f"""
             select symbol, name, exchange, sector, industry, close_price, avg_volume_20d, volatility_6m,
-                   return_6m, return_ytd, return_3m, return_1m, return_1w, return_1d
+                   return_6m, return_ytd, return_3m, return_1m, return_2w, return_1w, return_1d
             from stage1_candidates
             {age_filter}
             order by symbol
@@ -148,6 +152,7 @@ class PipelineState:
                     return_ytd=row["return_ytd"],
                     return_3m=row["return_3m"],
                     return_1m=row["return_1m"],
+                    return_2w=row["return_2w"],
                     return_1w=row["return_1w"],
                     return_1d=row["return_1d"],
                 ),
@@ -164,7 +169,7 @@ class PipelineState:
         rows = self.connection.execute(
             f"""
             select symbol, score, hits_json, snapshot_json, sector, industry, current_price, volatility_6m,
-                   return_6m, return_ytd, return_3m, return_1m, return_1w, return_1d
+                   return_6m, return_ytd, return_3m, return_1m, return_2w, return_1w, return_1d
             from stage2_candidates
             {age_filter}
             order by score desc
@@ -189,6 +194,7 @@ class PipelineState:
                     return_ytd=row["return_ytd"],
                     return_3m=row["return_3m"],
                     return_1m=row["return_1m"],
+                    return_2w=row["return_2w"],
                     return_1w=row["return_1w"],
                     return_1d=row["return_1d"],
                 )
@@ -205,6 +211,7 @@ class PipelineState:
                 return_ytd=?,
                 return_3m=?,
                 return_1m=?,
+                return_2w=?,
                 return_1w=?,
                 return_1d=?,
                 updated_at=current_timestamp
@@ -217,6 +224,7 @@ class PipelineState:
                 price_stats.return_ytd,
                 price_stats.return_3m,
                 price_stats.return_1m,
+                price_stats.return_2w,
                 price_stats.return_1w,
                 price_stats.return_1d,
                 symbol,
@@ -404,6 +412,7 @@ class PipelineState:
                 return_ytd real,
                 return_3m real,
                 return_1m real,
+                return_2w real,
                 return_1w real,
                 return_1d real,
                 updated_at text not null default current_timestamp
@@ -422,6 +431,7 @@ class PipelineState:
                 return_ytd real,
                 return_3m real,
                 return_1m real,
+                return_2w real,
                 return_1w real,
                 return_1d real,
                 updated_at text not null default current_timestamp
@@ -482,6 +492,7 @@ class PipelineState:
             self._ensure_column(table, "return_ytd", "real")
             self._ensure_column(table, "return_3m", "real")
             self._ensure_column(table, "return_1m", "real")
+            self._ensure_column(table, "return_2w", "real")
             self._ensure_column(table, "return_1w", "real")
             self._ensure_column(table, "return_1d", "real")
         self.connection.commit()

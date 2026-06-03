@@ -27,6 +27,7 @@ class PriceStats:
     return_ytd: float | None = None
     return_3m: float | None = None
     return_1m: float | None = None
+    return_2w: float | None = None
     return_1w: float | None = None
     return_1d: float | None = None
 
@@ -71,6 +72,7 @@ class Stage2Candidate:
     return_ytd: float | None = None
     return_3m: float | None = None
     return_1m: float | None = None
+    return_2w: float | None = None
     return_1w: float | None = None
     return_1d: float | None = None
 

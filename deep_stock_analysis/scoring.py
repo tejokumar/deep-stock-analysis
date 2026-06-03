@@ -17,6 +17,42 @@ HARDWARE_INDUSTRY_TERMS = (
 def score_candidate(snapshot: FundamentalSnapshot, price_stats: PriceStats | None = None) -> Stage2Candidate:
     hits: list[SieveHit] = []
 
+    if price_stats:
+        one_month = price_stats.return_1m
+        two_week = price_stats.return_2w
+        one_week = price_stats.return_1w
+        one_day = price_stats.return_1d
+        three_month = price_stats.return_3m
+
+        if two_week is not None and two_week >= 0.20 and (one_day is None or one_day > -0.12):
+            hits.append(
+                SieveHit(
+                    "two_week_breakout",
+                    30.0,
+                    f"Price advanced {two_week:.1%} over 2w",
+                )
+            )
+        elif one_month is not None and one_week is not None and one_month >= 0.20 and one_week >= 0.05:
+            score = 30.0 if one_month >= 0.35 or one_week >= 0.12 else 22.0
+            hits.append(
+                SieveHit(
+                    "fresh_price_breakout",
+                    score,
+                    f"Price advanced {one_month:.1%} over 1m with {one_week:.1%} 1w follow-through",
+                )
+            )
+        elif one_week is not None and one_week >= 0.15 and (one_day is None or one_day > -0.08):
+            hits.append(SieveHit("fresh_price_breakout", 24.0, f"Price advanced {one_week:.1%} over 1w"))
+
+        if three_month is not None and one_month is not None and three_month < 0 and one_month >= 0.20:
+            hits.append(
+                SieveHit(
+                    "downtrend_reversal",
+                    10.0,
+                    f"Price reversed from {three_month:.1%} 3m performance to {one_month:.1%} over 1m",
+                )
+            )
+
     if snapshot.capex_growth_yoy is not None and snapshot.capex_growth_yoy >= 0.30:
         compressed = price_stats and price_stats.volatility_6m is not None and price_stats.volatility_6m <= 0.05
         score = 24.0 if compressed else 16.0

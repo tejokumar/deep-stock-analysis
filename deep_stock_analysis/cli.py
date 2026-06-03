@@ -370,6 +370,7 @@ def write_report_index(reports_dir: Path, reports, state: PipelineState, max_row
         "YTD",
         "3M",
         "1M",
+        "2W",
         "1W",
         "Today",
         "Believability",
@@ -388,6 +389,7 @@ def write_report_index(reports_dir: Path, reports, state: PipelineState, max_row
         "---",
         "---",
         "---",
+        "---:",
         "---:",
         "---:",
         "---:",
@@ -431,6 +433,7 @@ def write_report_index(reports_dir: Path, reports, state: PipelineState, max_row
                     _pct(stage2.return_ytd if stage2 else None),
                     _pct(stage2.return_3m if stage2 else None),
                     _pct(stage2.return_1m if stage2 else None),
+                    _pct(stage2.return_2w if stage2 else None),
                     _pct(stage2.return_1w if stage2 else None),
                     _pct(stage2.return_1d if stage2 else None),
                     metrics.get("believability", ""),
@@ -552,10 +555,17 @@ def _final_score(markdown: str, stage2) -> float:
     if "Price Ahead of Street" in action:
         score -= 12
     if stage2:
+        hit_names = {hit.name for hit in stage2.hits}
+        if "two_week_breakout" in hit_names:
+            score += 12
+        if "fresh_price_breakout" in hit_names:
+            score += 10
+        if "downtrend_reversal" in hit_names:
+            score += 4
         if stage2.return_1m is not None and stage2.return_1m > 0.80:
             score -= 14
         if stage2.return_1w is not None and stage2.return_1w > 0.35:
-            score -= 8
+            score -= 3
         if stage2.return_6m is not None and stage2.return_6m < -0.25 and stage2.return_1w is not None and stage2.return_1w > 0.05:
             score += 6
     return score

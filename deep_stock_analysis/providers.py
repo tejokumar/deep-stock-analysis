@@ -149,6 +149,7 @@ class PolygonClient:
             return_ytd=_period_return(latest_close, _close_on_or_before(bars_by_date, date(today.year, 1, 1))),
             return_3m=_period_return(latest_close, _close_on_or_before(bars_by_date, today - timedelta(days=91))),
             return_1m=_period_return(latest_close, _close_on_or_before(bars_by_date, today - timedelta(days=30))),
+            return_2w=_period_return(latest_close, _close_on_or_before(bars_by_date, today - timedelta(days=14))),
             return_1w=_period_return(latest_close, _close_on_or_before(bars_by_date, today - timedelta(days=7))),
             return_1d=_period_return(latest_close, float(bars[-2]["c"]) if len(bars) >= 2 else None),
         )
@@ -192,8 +193,9 @@ class PolygonClient:
                 return json.loads(response.read().decode("utf-8"))
         except HTTPError as exc:
             raise ProviderError(f"Polygon HTTP {exc.code} for {url.split('?')[0]}") from exc
-        except URLError as exc:
-            raise ProviderError(f"Polygon network error for {url.split('?')[0]}: {exc.reason}") from exc
+        except (TimeoutError, URLError) as exc:
+            reason = getattr(exc, "reason", str(exc))
+            raise ProviderError(f"Polygon network error for {url.split('?')[0]}: {reason}") from exc
 
 
 class FmpClient:
