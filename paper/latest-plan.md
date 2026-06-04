@@ -1,23 +1,31 @@
 # Paper Trading Plan
 
 - Mode: execute
-- Reports: `reports/8220349720_2026-05-24T19-17-59Z`
-- Account equity: $98,306.48
-- Candidates: 7
-- Planned orders: 0
+- Reports: `reports/8219460544_2026-06-04T02-17-35Z`
+- Account equity: $100,778.85
+- Candidates: 10
+- Planned orders: 4
 
 ## Candidate List
 
 | Rank | Symbol | Score | Current | Entry High | Believability | Hype |
 |---:|---|---:|---:|---:|---:|---:|
-| 1 | AVAV | 114.1 | $174.23 | $182.94 | 85 | 25 |
-| 2 | FORM | 111.6 | $128.99 | $135.44 | 85 | 65 |
-| 3 | LITE | 107.5 | $946.90 | $994.25 | 90 | 65 |
-| 4 | ANET | 107.0 | $154.03 | $161.73 | 90 | 60 |
-| 5 | TLN | 104.2 | $372.45 | $391.07 | 82 | 55 |
-| 6 | AEIS | 102.3 | $324.86 | $341.10 | 75 | 70 |
-| 7 | STX | 100.6 | $812.73 | $853.37 | 85 | 65 |
+| 1 | SNOW | 112.3 | $241.28 | $253.34 | 78 | 60 |
+| 2 | CSCO | 110.8 | $126.50 | $132.83 | 85 | 55 |
+| 3 | MU | 109.8 | $1,079.57 | $1,133.55 | 82 | 65 |
+| 4 | TLN | 109.0 | $379.59 | $398.57 | 88 | 35 |
+| 5 | PANW | 108.5 | $280.43 | $294.45 | 85 | 25 |
+| 6 | AEIS | 106.1 | $322.50 | $338.62 | 75 | 65 |
+| 7 | LITE | 104.5 | $938.00 | $984.90 | 90 | 25 |
+| 8 | LUNR | 103.1 | $33.83 | $35.52 | 85 | 35 |
+| 9 | HON | 101.4 | $223.26 | $234.42 | 85 | 25 |
+| 10 | ANET | 100.2 | $174.37 | $183.09 | 90 | 35 |
 
 ## Orders
 
-No orders needed.
+| Side | Symbol | Amount | Reason |
+|---|---|---:|---|
+| buy | SNOW | $10,077.89 | rank 1, score 112.3, target 10.0% |
+| buy | CSCO | $10,077.89 | rank 2, score 110.8, target 10.0% |
+| buy | MU | $10,077.89 | rank 3, score 109.8, target 10.0% |
+| buy | PANW | $6,046.73 | rank 5, score 108.5, target 6.0% |
