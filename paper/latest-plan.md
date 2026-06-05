@@ -2,9 +2,9 @@
 
 - Mode: execute
 - Reports: `reports/8219460544_2026-06-04T02-17-35Z`
-- Account equity: $100,778.85
+- Account equity: $98,911.05
 - Candidates: 10
-- Planned orders: 4
+- Planned orders: 2
 
 ## Candidate List
 
@@ -25,7 +25,5 @@
 
 | Side | Symbol | Amount | Reason |
 |---|---|---:|---|
-| buy | SNOW | $10,077.89 | rank 1, score 112.3, target 10.0% |
-| buy | CSCO | $10,077.89 | rank 2, score 110.8, target 10.0% |
-| buy | MU | $10,077.89 | rank 3, score 109.8, target 10.0% |
-| buy | PANW | $6,046.73 | rank 5, score 108.5, target 6.0% |
+| buy | SNOW | $264.69 | rank 1, score 112.3, target 10.0% |
+| buy | MU | $385.31 | rank 3, score 109.8, target 10.0% |
