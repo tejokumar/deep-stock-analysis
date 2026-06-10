@@ -2,9 +2,9 @@
 
 - Mode: execute
 - Reports: `reports/8219189388_2026-06-07T05-36-51Z`
-- Account equity: $94,334.84
+- Account equity: $92,381.72
 - Candidates: 9
-- Planned orders: 1
+- Planned orders: 2
 
 ## Candidate List
 
@@ -24,4 +24,5 @@
 
 | Side | Symbol | Amount | Reason |
 |---|---|---:|---|
-| buy | LUNR | $81.90 | rank 6, score 105.6, target 6.0% |
+| buy | PENG | $242.99 | rank 3, score 110.0, target 10.0% |
+| buy | LUNR | $253.74 | rank 6, score 105.6, target 6.0% |
