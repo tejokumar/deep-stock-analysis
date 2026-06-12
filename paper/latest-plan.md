@@ -2,9 +2,9 @@
 
 - Mode: execute
 - Reports: `reports/8219189388_2026-06-07T05-36-51Z`
-- Account equity: $91,075.00
+- Account equity: $100,085.07
 - Candidates: 9
-- Planned orders: 0
+- Planned orders: 3
 
 ## Candidate List
 
@@ -22,4 +22,8 @@
 
 ## Orders
 
-No orders needed.
+| Side | Symbol | Amount | Reason |
+|---|---|---:|---|
+| buy | SNOW | $161.32 | rank 1, score 114.2, target 10.0% |
+| buy | PENG | $95.90 | rank 3, score 110.0, target 10.0% |
+| buy | LUNR | $204.43 | rank 6, score 105.6, target 6.0% |
