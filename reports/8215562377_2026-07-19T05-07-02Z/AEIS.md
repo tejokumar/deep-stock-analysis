@@ -1,0 +1,86 @@
+# AEIS Deep Discovery Report
+
+## Classification
+
+- Archetype: Multi-Signal Structural Inflection
+- Current price: $284.05
+- Quant score: 44.0
+- Transcript confidence: 95
+- Transcript themes: news_ai_infrastructure
+
+## Why It Passed
+
+- capex_divergence: CapEx growth YoY 163.3% with compressed 6m volatility 4.1%
+- revenue_acceleration: Revenue growth acceleration improved 8.5%
+
+## Transcript Evidence
+
+This Unstoppable Vanguard ETF Is Obliterating the S&P 500 in 2026, but a Looming Change in Interest Rates Could Halt Its Momentum | Why Shares in This Under-the-Radar Data Center Stock Power Surged 16% Today | Forget Nvidia And Broadcom, These 5 Small-Cap Chip Stocks Could Rally Big This Year | Why Advanced Energy Stock Exploded Higher Today | Advanced Energy (AEIS) Q2 Revenue Up 21% | Record Investments Needed in Renewable Tech and Mining to Hit Global Emission Targets
+
+## Catalyst-Linked Timeline
+
+- 0-2 quarters: confirm the first measurable catalyst behind the anomaly.
+- 2-4 quarters: track whether transcript claims become reported financial acceleration.
+- 4-8 quarters: watch for re-rating once the market can underwrite durability.
+
+## Scenario Price Targets
+
+- 3-6 month bear/base/bull: $232.92 / $366.35 / $446.86
+- 12-24 month bear/base/bull: $193.15 / $504.00 / $694.32
+- Method: current price multiplied by a scenario factor derived from quant score, transcript confidence, and recent volatility. Use this as a prioritization range; the automated action below combines the scenario range with analyst context and extension risk.
+
+## Analyst Estimates
+
+- Price target low/median/consensus/high: $325.00 / $415.00 / $424.29 / $535.00
+- Consensus target upside/downside vs current price: 49.4%
+- Recent average target, last quarter: $434.38 from 8 target(s)
+- Average target, last year: $312.52 from 25 target(s)
+- Analyst estimated revenue for 2026: $2,241,808,958.00 (8 analyst(s))
+- Analyst estimated EPS for 2026: 9.39 (8 analyst(s))
+
+## News Catalyst
+
+- Catalyst score: 100/100
+- News sentiment score: 100/100
+- News risk score: 0/100
+- Catalyst themes: ai_infrastructure
+- News risk flags: none
+- Evidence headlines:
+- This Unstoppable Vanguard ETF Is Obliterating the S&P 500 in 2026, but a Looming Change in Interest Rates Could Halt Its Momentum
+- Why Shares in This Under-the-Radar Data Center Stock Power Surged 16% Today
+- Forget Nvidia And Broadcom, These 5 Small-Cap Chip Stocks Could Rally Big This Year
+- Why Advanced Energy Stock Exploded Higher Today
+- Advanced Energy (AEIS) Q2 Revenue Up 21%
+- Record Investments Needed in Renewable Tech and Mining to Hit Global Emission Targets
+
+## Sentiment Analysis
+
+- News sentiment score: 85/100
+- Social sentiment score: 50/100
+- Retail attention score: 65/100
+- Hype score: 70/100
+- Controversy score: 10/100
+- Catalyst believability score: 75/100
+- Summary: AEIS shows solid Q2 revenue growth of 21% tied to AI/data center power demand but coverage mixes concrete results with clickbait headlines.
+- Bullish sentiment points:
+- Q2 revenue +21%
+- AI infrastructure and data center exposure
+- Stock surged 16% on news
+- Bearish sentiment points:
+- Heavy reliance on sensational headlines
+- Interest rate risk flagged in coverage
+- Limited specific backlog or guidance details
+
+## Automated Action
+
+- Bot action: Early Accumulation Candidate
+- Thesis score: 88.8/100 (44.0 quant, 95 transcript)
+- Suggested posture: Start or add gradually while the price remains below the 3-6 month base scenario.
+- Preferred entry zone: $275.53 to $298.25
+- 3-6 month base upside: 29.0%
+- 3-6 month bear downside: -18.0%
+- Best recent analyst reference target: $434.38 (52.9% vs current)
+- News impact: catalyst 100/100, risk 0/100
+- xAI sentiment impact: believability 75/100, hype 70/100, controversy 10/100
+- Invalidation triggers: revenue acceleration turns negative
+- Execution note: these are automated research outputs based on configured data feeds, not personalized financial advice.
