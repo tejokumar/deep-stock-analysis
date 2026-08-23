@@ -1,0 +1,10 @@
+# Ranked Bot Summary
+
+| Rank | Symbol | Name | Sub Sector | Score | Action | Thesis | Current | Entry Zone | Analyst Targets L/M/C/H | Recent Target | 2026E Rev | 2026E EPS | 6M | YTD | 3M | 1M | 2W | 1W | Today | Believability | Hype | Report |
+| ---: | --- | --- | --- | ---: | --- | ---: | ---: | --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
+| 1 | SCCO | Southern Copper Corporation | Metal Mining | 112.4 | Early Accumulation Candidate | 100.0/100 | $216.00 | $209.52 to $226.80 |  |  |  |  | 9.8% |  | 21.7% | 21.9% | 9.8% | 17.0% | 8.7% | 82/100 | 62/100 | [SCCO.md](SCCO.md) |
+| 2 | CSCO | Cisco Systems, Inc. Common Stock (DE) | Networking Infrastructure | 106.7 | Early Accumulation Candidate | 86.9/100 | $111.04 | $107.71 to $116.59 | $110.00 / $135.00 / $131.73 / $150.00 | $135.10 from 10 target(s) | $62,915,882,499.00 (18 analyst(s)) | 4.28 (14 analyst(s)) | 40.2% |  | -7.8% | -2.7% | -8.6% | -0.6% | 1.3% | 85/100 | 35/100 | [CSCO.md](CSCO.md) |
+| 3 | INTC | Intel Corp | Semiconductors | 106.2 | Early Accumulation Candidate | 76.5/100 | $90.07 | $87.37 to $94.57 | $60.00 / $110.00 / $110.30 / $200.00 | $118.59 from 27 target(s) | $62,704,069,942.00 (31 analyst(s)) | 1.50 (24 analyst(s)) | 104.2% |  | -24.8% | -2.4% | -11.4% | -12.1% | -2.2% | 88/100 | 65/100 | [INTC.md](INTC.md) |
+| 4 | PWR | Quanta Services, Inc. | Electrical Work | 103.4 | Early Accumulation Candidate | 96.7/100 | $639.34 | $620.16 to $671.31 |  |  |  |  | 15.7% |  | -11.6% | 2.2% | -4.8% | -6.8% | -3.5% | 90/100 | 60/100 | [PWR.md](PWR.md) |
+| 5 | MRVL | Marvell Technology, Inc. Common Stock | Semiconductors | 102.7 | Early Accumulation Candidate | 85.2/100 | $237.04 | $229.93 to $248.89 |  |  |  |  | 198.2% |  | 20.7% | 22.0% | 8.4% | 6.8% | -5.6% | 75/100 | 60/100 | [MRVL.md](MRVL.md) |
+| 6 | TLN | Talen Energy Corporation Common Stock | Utilities - Power | 101.9 | Early Accumulation Candidate | 92.4/100 | $314.46 | $305.03 to $330.18 |  |  |  |  | -17.7% |  | -15.6% | -12.6% | -9.6% | -13.3% | -0.8% | 92/100 | 65/100 | [TLN.md](TLN.md) |
