@@ -2,6 +2,7 @@
 
 Newest runs are listed first. Open a run folder and start with `index.md`.
 
+- [2026-10-25T08-58-59Z](reports/8207081260_2026-10-25T08-58-59Z/index.md)
 - [2026-10-18T08-37-37Z](reports/8207687342_2026-10-18T08-37-37Z/index.md)
 - [2026-10-11T10-38-27Z](reports/8208284892_2026-10-11T10-38-27Z/index.md)
 - [2026-10-04T10-26-27Z](reports/8208890412_2026-10-04T10-26-27Z/index.md)
